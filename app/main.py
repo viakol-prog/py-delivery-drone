@@ -1,4 +1,4 @@
-from typing import Optional, Any, List
+from typing import Optional, List
 
 
 class Cargo:
@@ -7,16 +7,15 @@ class Cargo:
 
 
 class BaseRobot:
-    class YourClassName:
-        def __init__(
-                self,
-                name: str,
-                weight: float,
-                coords: Optional[List[int]] = None
-        ) -> None:
-            self.name = name
-            self.weight = weight
-            self.coords = coords if coords is not None else [0, 0]
+    def __init__(
+            self,
+            name: str,
+            weight: float,
+            coords: Optional[List[float]] = None
+    ) -> None:
+        self.name = name
+        self.weight = weight
+        self.coords = coords if coords is not None else [0.0, 0.0]
 
     def get_info(self) -> str:
         return f"Robot: {self.name}, Weight: {self.weight}"
@@ -34,11 +33,9 @@ class BaseRobot:
         self.coords[0] -= step
 
     def __str__(self) -> str:
-        return (
-            f"Robot: {self.name}, "
-            f"Weight: {self.weight}, "
-            f"Coords: {self.coords}"
-        )
+        return (f"Robot: {self.name}, "
+                f"Weight: {self.weight}, "
+                f"Coords: {self.coords}")
 
 
 class FlyingRobot(BaseRobot):
@@ -46,18 +43,17 @@ class FlyingRobot(BaseRobot):
             self,
             name: str,
             weight: float,
-            coords: list[float] | None = None
+            coords: Optional[List[float]] = None
     ) -> None:
-        self.name = name
-        self.weight = weight
-        self.coords = coords
-
+        # Prepare 3D coordinates (x, y, z)
         if coords is None:
-            coords = [0, 0, 0]
+            coords_prepared = [0.0, 0.0, 0.0]
         elif len(coords) == 2:
-            coords = [coords[0], coords[1], 0]
+            coords_prepared = [float(coords[0]), float(coords[1]), 0.0]
+        else:
+            coords_prepared = coords
 
-        super().__init__(name, weight, coords)
+        super().__init__(name, weight, coords_prepared)
 
     def go_up(self, step: int = 1) -> None:
         self.coords[2] += step
@@ -72,18 +68,17 @@ class DeliveryDrone(FlyingRobot):
             name: str,
             weight: float,
             max_load_weight: float,
-            coords: Optional[Any] = None,
-            current_load: Optional[Any] = None
+            coords: Optional[List[float]] = None,
+            current_load: Optional[Cargo] = None
     ) -> None:
         super().__init__(name, weight, coords)
         self.max_load_weight = max_load_weight
         self.current_load = current_load
 
-    def hook_load(self, cargo: dict) -> None:
+    def hook_load(self, cargo: Cargo) -> None:
+        # Check if drone is empty and cargo isn't too heavy
         if self.current_load is None and cargo.weight <= self.max_load_weight:
             self.current_load = cargo
-            return True
-        return False
 
     def unhook_load(self) -> None:
         self.current_load = None
